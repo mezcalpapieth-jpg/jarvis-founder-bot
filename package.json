@@ -18,6 +18,9 @@
     "grammy": "^1.31.0",
     "node-cron": "^3.0.3"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
