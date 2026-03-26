@@ -3,6 +3,7 @@ import express from "express";
 import { Bot, webhookCallback, type Context } from "grammy";
 import { config } from "./config.js";
 import { getAllRepoActivity, formatActivityForTelegram } from "./github.js";
+
 import {
   saveMessage,
   saveDecision,
@@ -80,11 +81,13 @@ bot.on("message:text", async (ctx) => {
   }
 
   // 3. Build context
-  const [recentMessages, decisions, actionItems, rollingSummary] = await Promise.all([
+  const githubKeywords = /github|commit|pr|pull request|repo|branch|merge|push|código|codigo/i;
+  const [recentMessages, decisions, actionItems, rollingSummary, githubActivity] = await Promise.all([
     getRecentMessages(chatId, 30),
     getRecentDecisions(chatId, 5),
     getOpenActionItems(chatId),
     getChatSummary(chatId),
+    githubKeywords.test(text) ? getAllRepoActivity(48) : Promise.resolve([]),
   ]);
 
   // 4. Call Claude
@@ -95,6 +98,7 @@ bot.on("message:text", async (ctx) => {
       decisions,
       actionItems,
       rollingSummary,
+      githubActivity,
     });
   } catch (err) {
     console.error("Claude error:", err);
