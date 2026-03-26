@@ -252,9 +252,14 @@ async function main() {
 
     const webhookPath = `/webhook/${config.telegram.token}`;
 
-    // timeoutMilliseconds: 0 disables grammY's 10s handler timeout —
-    // Claude + Supabase can take longer than that on cold starts.
-    app.use(webhookPath, webhookCallback(bot, "express", { timeoutMilliseconds: 0 }));
+    // Respond 200 to Telegram immediately, process the update async in background.
+    // This prevents Railway from seeing a timeout/503 while Claude is thinking.
+    app.post(webhookPath, (req, res) => {
+      res.sendStatus(200); // ack Telegram right away
+      bot.handleUpdate(req.body).catch((err) =>
+        console.error("[webhook] handleUpdate error:", err)
+      );
+    });
 
     // Health check for Railway
     app.get("/health", (_req, res) => res.json({ ok: true }));
