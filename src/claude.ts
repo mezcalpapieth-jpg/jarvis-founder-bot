@@ -69,7 +69,7 @@ export async function getChatResponse(
 ): Promise<string> {
   const contextBlock = buildContextBlock(context);
 
-  const stream = anthropic.messages.stream({
+  const response = await anthropic.messages.create({
     model: "claude-3-5-haiku-20241022",
     max_tokens: 1024,
     system: SYSTEM_PROMPT,
@@ -81,9 +81,7 @@ export async function getChatResponse(
     ],
   });
 
-  const final = await stream.finalMessage();
-
-  for (const block of final.content) {
+  for (const block of response.content) {
     if (block.type === "text") return block.text.trim();
   }
   return "";
