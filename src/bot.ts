@@ -251,7 +251,10 @@ async function main() {
     app.use(express.json());
 
     const webhookPath = `/webhook/${config.telegram.token}`;
-    app.use(webhookPath, webhookCallback(bot, "express"));
+
+    // timeoutMilliseconds: 0 disables grammY's 10s handler timeout —
+    // Claude + Supabase can take longer than that on cold starts.
+    app.use(webhookPath, webhookCallback(bot, "express", { timeoutMilliseconds: 0 }));
 
     // Health check for Railway
     app.get("/health", (_req, res) => res.json({ ok: true }));
